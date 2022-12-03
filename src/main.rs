@@ -6,13 +6,41 @@ use std::{
 
 fn main() {
     let mut score = 0;
-    if let Ok(lines) = read_lines("./src/day3.txt") {
+    if let Ok(mut lines) = read_lines("./src/day3.txt") {
         // Consumes the iterator, returns an (Optional) String
-        for line in lines {
-            if let Ok(l) = line {
-                score += score_line(&l);
+        loop {
+            let first_line;
+            match lines.next() {
+                Some(x) => first_line = x,
+                None => break,
+            }
+            let second_line = lines.next().unwrap().unwrap();
+            let third_line = lines.next().unwrap().unwrap();
+
+            println!("first line: {:?}", first_line);
+            println!("second_line line: {}", second_line);
+            println!("third line: {}", third_line);
+
+            for c in first_line.unwrap().chars() {
+                if second_line.contains(&c.to_string()) && third_line.contains(&c.to_string()) {
+                    println!("char: {}", c);
+                    println!("prio for letter: {}", letter_to_prio(&c));
+                    score += letter_to_prio(&c);
+                    println!("score: {}", score);
+                    break;
+                }
             }
         }
+        // for line in lines {
+        //     if let Ok(l) = line {
+        //         for c in l.chars() {
+        //             if second_line.unwrap().contains(&c.to_string())
+        //                 && third_line.unwrap().contains(&c.to_string())
+        //             {
+        //                 score += letter_to_prio(&c);
+        //             }
+        //         }
+        //     }
     }
     println!("{}", score);
 }
@@ -23,18 +51,6 @@ where
 {
     let file = File::open(filename)?;
     Ok(io::BufReader::new(file).lines())
-}
-
-fn score_line(line: &str) -> i32 {
-    let first_half = &line[..(line.len() / 2)];
-    let second_half = &line[(line.len() / 2)..];
-
-    for c in first_half.chars() {
-        if second_half.contains(c) {
-            return letter_to_prio(&c);
-        }
-    }
-    0
 }
 
 fn letter_to_prio(letter: &char) -> i32 {
