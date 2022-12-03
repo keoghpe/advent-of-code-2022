@@ -4,53 +4,17 @@ use std::{
     path::Path,
 };
 
-enum Move {
-    Rock,
-    Paper,
-    Scissors,
-}
-
-enum Outcome {
-    Win,
-    Lose,
-    Draw,
-}
-
 fn main() {
     let mut score = 0;
-
-    if let Ok(lines) = read_lines("./src/day2.txt") {
+    if let Ok(lines) = read_lines("./src/day3.txt") {
         // Consumes the iterator, returns an (Optional) String
         for line in lines {
             if let Ok(l) = line {
-                let mut split = l.split_whitespace();
-                let a = split.next().unwrap();
-                let b = split.next().unwrap();
-
-                let their_move = match a {
-                    "A" => Move::Rock,
-                    "B" => Move::Paper,
-                    "C" => Move::Scissors,
-                    _ => panic!("shit"),
-                };
-
-                let my_outcome = match b {
-                    "X" => Outcome::Lose,
-                    "Y" => Outcome::Draw,
-                    "Z" => Outcome::Win,
-                    _ => panic!("shit"),
-                };
-
-                let new_score = calculate_score(&their_move, &my_outcome);
-
-                score += new_score;
-
-                println!("{} {} {} {}", a, b, new_score, score);
+                score += score_line(&l);
             }
         }
-
-        println!("{}", score);
     }
+    println!("{}", score);
 }
 
 fn read_lines<P>(filename: P) -> io::Result<io::Lines<io::BufReader<File>>>
@@ -61,62 +25,28 @@ where
     Ok(io::BufReader::new(file).lines())
 }
 
-fn calculate_score(their_move: &Move, my_outcome: &Outcome) -> i32 {
-    // let base_score = match my_move {
-    //     Move::Rock => 1,
-    //     Move::Paper => 2,
-    //     Move::Scissors => 3,
-    // };
+fn score_line(line: &str) -> i32 {
+    let first_half = &line[..(line.len() / 2)];
+    let second_half = &line[(line.len() / 2)..];
 
-    // let outcome_score = match calculate_outcome(&their_move, &my_move) {
-    //     Outcome::Win => 6,
-    //     Outcome::Lose => 0,
-    //     Outcome::Draw => 3,
-    // };
-
-    let base_score = match calculate_move(&their_move, &my_outcome) {
-        Move::Rock => 1,
-        Move::Paper => 2,
-        Move::Scissors => 3,
-    };
-
-    let outcome_score = match my_outcome {
-        Outcome::Win => 6,
-        Outcome::Lose => 0,
-        Outcome::Draw => 3,
-    };
-    base_score + outcome_score
-}
-
-fn calculate_outcome(their_move: &Move, my_move: &Move) -> Outcome {
-    use Move::*;
-
-    match [my_move, their_move] {
-        [Rock, Rock] => Outcome::Draw,
-        [Paper, Paper] => Outcome::Draw,
-        [Scissors, Scissors] => Outcome::Draw,
-        [Rock, Paper] => Outcome::Lose,
-        [Rock, Scissors] => Outcome::Win,
-        [Paper, Rock] => Outcome::Win,
-        [Paper, Scissors] => Outcome::Lose,
-        [Scissors, Rock] => Outcome::Lose,
-        [Scissors, Paper] => Outcome::Win,
+    for c in first_half.chars() {
+        if second_half.contains(c) {
+            return letter_to_prio(&c);
+        }
     }
+    0
 }
 
-fn calculate_move(their_move: &Move, my_outcome: &Outcome) -> Move {
-    use Move::*;
-    use Outcome::*;
+fn letter_to_prio(letter: &char) -> i32 {
+    // a = 97
+    // z = 122
+    // A = 65
+    // Z = 90
 
-    match (their_move, my_outcome) {
-        (Rock, Draw) => Rock,
-        (Paper, Draw) => Paper,
-        (Scissors, Draw) => Scissors,
-        (Rock, Win) => Paper,
-        (Rock, Lose) => Scissors,
-        (Paper, Lose) => Rock,
-        (Paper, Win) => Scissors,
-        (Scissors, Win) => Rock,
-        (Scissors, Lose) => Paper,
+    let score = *letter as i32;
+    if (97..123).contains(&score) {
+        score - 96
+    } else {
+        score - 38
     }
 }
