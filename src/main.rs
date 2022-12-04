@@ -42,10 +42,10 @@ fn main() {
             println!("a start: {} a end: {}", elf_a_start, elf_a_end);
             println!("b start: {} b end: {}", elf_b_start, elf_b_end);
 
-            if enclose(elf_a_start, elf_a_end, elf_b_start, elf_b_end)
-                || enclose(elf_b_start, elf_b_end, elf_a_start, elf_a_end)
+            if overlap(elf_a_start, elf_a_end, elf_b_start, elf_b_end)
+                || overlap(elf_b_start, elf_b_end, elf_a_start, elf_a_end)
             {
-                println!("enclosed!");
+                println!("overlap!");
                 score += 1;
             }
         }
@@ -59,6 +59,10 @@ where
 {
     let file = File::open(filename)?;
     Ok(io::BufReader::new(file).lines())
+}
+
+fn overlap(a_start: i32, a_end: i32, b_start: i32, b_end: i32) -> bool {
+    !(a_start > b_end || b_start > a_end)
 }
 
 fn enclose(a_start: i32, a_end: i32, b_start: i32, b_end: i32) -> bool {
