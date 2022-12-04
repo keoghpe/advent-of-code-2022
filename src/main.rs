@@ -6,41 +6,49 @@ use std::{
 
 fn main() {
     let mut score = 0;
-    if let Ok(mut lines) = read_lines("./src/day3.txt") {
-        // Consumes the iterator, returns an (Optional) String
-        loop {
-            let first_line;
-            match lines.next() {
-                Some(x) => first_line = x,
-                None => break,
-            }
-            let second_line = lines.next().unwrap().unwrap();
-            let third_line = lines.next().unwrap().unwrap();
+    if let Ok(lines) = read_lines("./src/day4.txt") {
+        for line in lines {
+            //     if let Ok(l) = line {
+            //         for c in l.chars() {
+            //             if second_line.unwrap().contains(&c.to_string())
+            //                 && third_line.unwrap().contains(&c.to_string())
+            //             {
+            //                 score += letter_to_prio(&c);
+            //             }
+            //         }
+            let l = line.unwrap();
+            let mut split_line = l.split(",");
+            // let elf_a = split_line.next();
+            // let elf_b = split_line.next();
 
-            println!("first line: {:?}", first_line);
-            println!("second_line line: {}", second_line);
-            println!("third line: {}", third_line);
+            let mut elf_a_coords = split_line
+                .next()
+                .unwrap()
+                .split("-")
+                .map(|x| x.parse::<i32>().unwrap());
 
-            for c in first_line.unwrap().chars() {
-                if second_line.contains(&c.to_string()) && third_line.contains(&c.to_string()) {
-                    println!("char: {}", c);
-                    println!("prio for letter: {}", letter_to_prio(&c));
-                    score += letter_to_prio(&c);
-                    println!("score: {}", score);
-                    break;
-                }
+            let mut elf_b_coords = split_line
+                .next()
+                .unwrap()
+                .split("-")
+                .map(|x| x.parse::<i32>().unwrap());
+
+            let elf_a_start = elf_a_coords.next().unwrap();
+            let elf_a_end = elf_a_coords.next().unwrap();
+
+            let elf_b_start = elf_b_coords.next().unwrap();
+            let elf_b_end = elf_b_coords.next().unwrap();
+
+            println!("a start: {} a end: {}", elf_a_start, elf_a_end);
+            println!("b start: {} b end: {}", elf_b_start, elf_b_end);
+
+            if enclose(elf_a_start, elf_a_end, elf_b_start, elf_b_end)
+                || enclose(elf_b_start, elf_b_end, elf_a_start, elf_a_end)
+            {
+                println!("enclosed!");
+                score += 1;
             }
         }
-        // for line in lines {
-        //     if let Ok(l) = line {
-        //         for c in l.chars() {
-        //             if second_line.unwrap().contains(&c.to_string())
-        //                 && third_line.unwrap().contains(&c.to_string())
-        //             {
-        //                 score += letter_to_prio(&c);
-        //             }
-        //         }
-        //     }
     }
     println!("{}", score);
 }
@@ -53,16 +61,6 @@ where
     Ok(io::BufReader::new(file).lines())
 }
 
-fn letter_to_prio(letter: &char) -> i32 {
-    // a = 97
-    // z = 122
-    // A = 65
-    // Z = 90
-
-    let score = *letter as i32;
-    if (97..123).contains(&score) {
-        score - 96
-    } else {
-        score - 38
-    }
+fn enclose(a_start: i32, a_end: i32, b_start: i32, b_end: i32) -> bool {
+    a_start <= b_start && a_end >= b_end
 }
