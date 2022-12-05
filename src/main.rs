@@ -11,15 +11,8 @@ fn main() {
 
     if let Ok(lines) = read_lines("./src/day5.txt") {
         for line in lines {
-            //     if let Ok(l) = line {
-            //         for c in l.chars() {
-            //             if second_line.unwrap().contains(&c.to_string())
-            //                 && third_line.unwrap().contains(&c.to_string())
-            //             {
-            //                 score += letter_to_prio(&c);
-            //             }
-            //         }
             let l = line.unwrap();
+
             if grid_parsing_complete == false {
                 println!("{}", l);
                 let mut space_count = 0;
@@ -54,10 +47,17 @@ fn main() {
                 split_line.next();
                 let to = split_line.next().unwrap().parse::<i32>().unwrap();
 
+                let mut temp: Vec<char> = Vec::new();
                 for _ in 0..amount {
                     let from_val = stacks[(from - 1) as usize].pop();
 
                     match from_val {
+                        Some(f_val) => temp.push(f_val),
+                        None => (),
+                    }
+                }
+                while temp.len() > 0 {
+                    match temp.pop() {
                         Some(f_val) => stacks[(to - 1) as usize].push(f_val),
                         None => (),
                     }
@@ -86,3 +86,14 @@ where
 // , ['J', 'C', 'F', 'T', 'H', 'F', 'D', 'N', 'Z', 'C', 'F', 'P']
 // , ['G', 'G', 'T', 'Q', 'N', 'J', 'J', 'R', 'M', 'Q', 'V', 'R', 'M', 'F']
 // , ['S', 'S', 'N']]
+
+// [['F', 'Q', 'Q', 'Q', 'Z', 'Z', 'T', 'W', 'C', 'R', 'Z', 'T', 'G']
+// , ['R', 'G']
+// , ['N']
+// , ['F', 'P']
+// , ['D', 'L', 'V', 'F', 'G', 'J']
+// , ['M', 'N', 'B']
+// , ['J', 'J', 'H', 'D', 'F', 'N', 'J', 'Q', 'F', 'R', 'R', 'T']
+// , ['N', 'B', 'N', 'S', 'L', 'G', 'M', 'C', 'N', 'C', 'H', 'S', 'N', 'T']
+// , ['Q', 'S', 'R']
+// ]
