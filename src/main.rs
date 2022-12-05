@@ -6,7 +6,10 @@ use std::{
 
 fn main() {
     let mut score = 0;
-    if let Ok(lines) = read_lines("./src/day4.txt") {
+    let mut grid_parsing_complete = false;
+    let mut stacks: [Vec<char>; 9] = Default::default();
+
+    if let Ok(lines) = read_lines("./src/day5.txt") {
         for line in lines {
             //     if let Ok(l) = line {
             //         for c in l.chars() {
@@ -17,39 +20,52 @@ fn main() {
             //             }
             //         }
             let l = line.unwrap();
-            let mut split_line = l.split(",");
-            // let elf_a = split_line.next();
-            // let elf_b = split_line.next();
+            if grid_parsing_complete == false {
+                println!("{}", l);
+                let mut space_count = 0;
 
-            let mut elf_a_coords = split_line
-                .next()
-                .unwrap()
-                .split("-")
-                .map(|x| x.parse::<i32>().unwrap());
+                for (i, c) in l.chars().enumerate() {
+                    println!("{}", c);
 
-            let mut elf_b_coords = split_line
-                .next()
-                .unwrap()
-                .split("-")
-                .map(|x| x.parse::<i32>().unwrap());
+                    match c {
+                        'A'..='Z' => {
+                            let index = i / 4;
+                            stacks[index].insert(0, c);
+                        }
+                        _ => (),
+                    }
+                }
+                // 1
+                // 5
+                // 9
+                // 13
+                // 17
+                // [B] [N] [N] [N] [Q] [W] [L] [Q] [S]
+                if l == "" {
+                    grid_parsing_complete = true;
+                }
+            } else {
+                let mut split_line = l.split(" ");
+                split_line.next();
 
-            let elf_a_start = elf_a_coords.next().unwrap();
-            let elf_a_end = elf_a_coords.next().unwrap();
+                let amount = split_line.next().unwrap().parse::<i32>().unwrap();
+                split_line.next();
+                let from = split_line.next().unwrap().parse::<i32>().unwrap();
+                split_line.next();
+                let to = split_line.next().unwrap().parse::<i32>().unwrap();
 
-            let elf_b_start = elf_b_coords.next().unwrap();
-            let elf_b_end = elf_b_coords.next().unwrap();
+                for _ in 0..amount {
+                    let from_val = stacks[(from - 1) as usize].pop();
 
-            println!("a start: {} a end: {}", elf_a_start, elf_a_end);
-            println!("b start: {} b end: {}", elf_b_start, elf_b_end);
-
-            if overlap(elf_a_start, elf_a_end, elf_b_start, elf_b_end)
-                || overlap(elf_b_start, elf_b_end, elf_a_start, elf_a_end)
-            {
-                println!("overlap!");
-                score += 1;
+                    match from_val {
+                        Some(f_val) => stacks[(to - 1) as usize].push(f_val),
+                        None => (),
+                    }
+                }
             }
         }
     }
+    println!("{:?}", stacks);
     println!("{}", score);
 }
 
@@ -61,10 +77,12 @@ where
     Ok(io::BufReader::new(file).lines())
 }
 
-fn overlap(a_start: i32, a_end: i32, b_start: i32, b_end: i32) -> bool {
-    !(a_start > b_end || b_start > a_end)
-}
-
-fn enclose(a_start: i32, a_end: i32, b_start: i32, b_end: i32) -> bool {
-    a_start <= b_start && a_end >= b_end
-}
+// [['B', 'Q', 'L', 'J', 'S', 'Z', 'R', 'B', 'N', 'Q', 'Z', 'G', 'Q']
+// , ['F', 'N']
+// , ['N']
+// , ['D', 'T']
+// , ['W', 'C', 'H', 'R', 'N', 'G']
+// , ['L', 'R', 'T']
+// , ['J', 'C', 'F', 'T', 'H', 'F', 'D', 'N', 'Z', 'C', 'F', 'P']
+// , ['G', 'G', 'T', 'Q', 'N', 'J', 'J', 'R', 'M', 'Q', 'V', 'R', 'M', 'F']
+// , ['S', 'S', 'N']]
