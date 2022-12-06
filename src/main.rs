@@ -4,7 +4,7 @@ use std::{
     path::Path,
 };
 
-static CONSECUTIVE_CHARS: usize = 4;
+static CONSECUTIVE_CHARS: usize = 14;
 
 fn main() {
     let mut current_chars: Vec<char> = Vec::new();
