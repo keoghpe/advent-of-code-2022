@@ -1,41 +1,65 @@
 use std::{
+    collections::HashMap,
     fs::File,
     io::{self, BufRead},
     path::Path,
 };
 
-static CONSECUTIVE_CHARS: usize = 14;
+// struct Node<'a> {
+//     content: HashMap,
+//     parent: &'a Node,
+// }
+
+// Nodes point to their children and their parent
+// We need to have a pointer to the root node always
+// We need to have a pointer to the current node
+
+// cd / changes the current node pointer to the root node
+// cd .. changes to the current node parent
+// ls lists the current directories. It should add any that aren't children of the current node.
 
 fn main() {
-    let mut current_chars: Vec<char> = Vec::new();
+    // let root = Node::new();
 
-    if let Ok(lines) = read_lines("./src/day6.txt") {
+    if let Ok(lines) = read_lines("./src/day7.txt") {
         for line in lines {
             let l = line.unwrap();
+            println!("{}", l);
 
-            for (i, c) in l.chars().enumerate() {
-                println!("{}", c);
+            match l.as_bytes()[0] as char {
+                '$' => match &l[..4] {
+                    "$ cd" => match l.split(' ').nth(2).unwrap() {
+                        "/" => {
+                            println!("change to root");
+                        }
+                        ".." => {
+                            println!("naviate out");
+                        }
+                        dir_name => {
+                            println!("navigate to dir: {}", dir_name);
+                        }
+                    },
+                    "$ ls" => {
+                        println!("list files");
+                    }
+                    _ => (),
+                },
+                _ => {
+                    let size = l.split(' ').nth(0).unwrap();
+                    let name = l.split(' ').nth(1).unwrap();
 
-                current_chars.push(c);
-
-                if current_chars.len() > CONSECUTIVE_CHARS {
-                    current_chars.remove(0);
-                }
-
-                if current_chars.len() == CONSECUTIVE_CHARS && all_unique(&current_chars) {
-                    println!("{}", i + 1);
-                    return;
+                    match size {
+                        "dir" => {
+                            println!("This is a dir with name {}", name);
+                        }
+                        _ => {
+                            println!("This is a file with name {} and size {}", name, size);
+                        }
+                    }
                 }
             }
         }
     }
-}
-
-fn all_unique(char_list: &Vec<char>) -> bool {
-    let mut list_copy = char_list.clone();
-    list_copy.sort();
-    list_copy.dedup();
-    list_copy.len() == CONSECUTIVE_CHARS
 }
 
 fn read_lines<P>(filename: P) -> io::Result<io::Lines<io::BufReader<File>>>
