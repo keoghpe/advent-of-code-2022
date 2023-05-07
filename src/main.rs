@@ -52,6 +52,16 @@ mod AOC {
                 .collect::<Vec<String>>()
                 .join("\n")
         }
+
+        pub fn size(&self) -> i32 {
+            self.contents
+                .iter()
+                .map(|n| match n {
+                    MNode::File(f) => f.as_ref().fsize.clone(),
+                    MNode::Dir(d) => d.as_ref().size(),
+                })
+                .sum()
+        }
     }
 
     pub enum MNode {
@@ -167,6 +177,17 @@ mod tests {
         assert_eq!("abcd\ndefg\nhijk\nlmno", root.ls())
     }
 
+    #[test]
+    fn supports_getting_the_size_of_the_files_in_the_dir() {
+        let mut root = MDir::new("/".to_string());
+
+        root.add_file("abcd".to_string(), 30);
+        root.add_file("defg".to_string(), 30);
+        root.add_file("hijk".to_string(), 30);
+        root.add_file("lmno".to_string(), 30);
+
+        assert_eq!(120, root.size())
+    }
     // #[test]
     // fn dir_size_computes_size_of_all_containing_elements() {
     //     let mut root = MDir {
