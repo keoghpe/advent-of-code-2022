@@ -11,7 +11,7 @@ use std::{
 // }
 
 mod AOC {
-    use std::rc::Rc;
+    use std::{cell::RefCell, rc::Rc};
 
     pub struct MFile {
         name: String,
@@ -21,15 +21,20 @@ mod AOC {
     pub struct MDir {
         name: String,
         contents: Vec<MNode>,
-        parent: Option<Rc<MDir>>,
+        parent: Option<Rc<RefCell<MDir>>>,
+    }
+
+    pub enum MNode {
+        File(Rc<MFile>),
+        Dir(Rc<RefCell<MDir>>),
     }
 
     impl MDir {
-        pub fn new(name: String) -> Self {
+        pub fn new(name: String, parent: Option<Rc<RefCell<MDir>>>) -> Self {
             MDir {
                 name: name,
                 contents: vec![],
-                parent: None as Option<Rc<MDir>>,
+                parent: parent,
             }
         }
 
@@ -42,12 +47,16 @@ mod AOC {
             self.contents.push(MNode::File(Rc::clone(&rc)));
         }
 
+        pub fn add_dir(&mut self, dir: Rc<RefCell<MDir>>) {
+            self.contents.push(MNode::Dir(Rc::clone(&dir)));
+        }
+
         pub fn ls(&self) -> String {
             self.contents
                 .iter()
                 .map(|n| match n {
                     MNode::File(f) => f.as_ref().name.clone(),
-                    MNode::Dir(d) => d.as_ref().name.clone(),
+                    MNode::Dir(d) => d.as_ref().borrow().name.clone(),
                 })
                 .collect::<Vec<String>>()
                 .join("\n")
@@ -58,15 +67,10 @@ mod AOC {
                 .iter()
                 .map(|n| match n {
                     MNode::File(f) => f.as_ref().fsize.clone(),
-                    MNode::Dir(d) => d.as_ref().size(),
+                    MNode::Dir(d) => d.as_ref().borrow().size(),
                 })
                 .sum()
         }
-    }
-
-    pub enum MNode {
-        File(Rc<MFile>),
-        Dir(Rc<MDir>),
     }
 }
 
@@ -161,13 +165,13 @@ where
 
 #[cfg(test)]
 mod tests {
-    use std::rc::Rc;
+    use std::{borrow::BorrowMut, cell::RefCell, rc::Rc};
 
     use crate::AOC::*;
 
     #[test]
     fn supports_adding_files_to_a_dir() {
-        let mut root = MDir::new("/".to_string());
+        let mut root = MDir::new("/".to_string(), None);
 
         root.add_file("abcd".to_string(), 30);
         root.add_file("defg".to_string(), 30);
@@ -179,7 +183,7 @@ mod tests {
 
     #[test]
     fn supports_getting_the_size_of_the_files_in_the_dir() {
-        let mut root = MDir::new("/".to_string());
+        let mut root = MDir::new("/".to_string(), None);
 
         root.add_file("abcd".to_string(), 30);
         root.add_file("defg".to_string(), 30);
@@ -187,6 +191,34 @@ mod tests {
         root.add_file("lmno".to_string(), 30);
 
         assert_eq!(120, root.size())
+    }
+
+    #[test]
+    fn supports_getting_the_size_of_the_files_in_the_subdirs() {
+        let mut root = MDir::new("/".to_string(), None);
+
+        root.add_file("abcd".to_string(), 30);
+        root.add_file("defg".to_string(), 30);
+
+        let root_rc = Rc::new(RefCell::new(root));
+
+        let mut dir_1 = MDir::new("1234".to_string(), Some(root_rc.clone()));
+
+        dir_1.add_file("hijk".to_string(), 30);
+        dir_1.add_file("lmno".to_string(), 30);
+        let dir_1_ref = Rc::new(RefCell::new(dir_1));
+
+        root_rc.as_ref().borrow_mut().add_dir(dir_1_ref);
+
+        let mut dir_2 = MDir::new("1234".to_string(), Some(root_rc.clone()));
+
+        dir_2.add_file("hijk".to_string(), 30);
+        dir_2.add_file("lmno".to_string(), 30);
+
+        let dir_2_ref = Rc::new(RefCell::new(dir_2));
+        root_rc.as_ref().borrow_mut().add_dir(dir_2_ref);
+
+        assert_eq!(180, root_rc.as_ref().borrow().size());
     }
     // #[test]
     // fn dir_size_computes_size_of_all_containing_elements() {
